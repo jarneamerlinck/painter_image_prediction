@@ -32,22 +32,20 @@ def get_raw_file_name_for_painter(painter:str) ->list:
 
 def get_data_set_for_painter(painter:str, number_of_images:int)-> tuple:
     # get images
+    total_list = []
     train_list = []
     val_list = []
     test_list = []
+
+    [total_list.append(f"{file_name}") for file_name in get_raw_file_name_for_painter(painter)]
     
-    temp = []
-    
-    # [temp.append(f"{ORIG_DATA_PATH}/{painter}/{file_name}") for file_name in get_raw_file_name_for_painter(painter)]
-    [temp.append(f"{file_name}") for file_name in get_raw_file_name_for_painter(painter)]
-    
-    if number_of_images > len(temp):
+    if number_of_images > len(total_list):
         raise Exception(f"To little images of {painter} to short")
     
     # shuffle list
-    random.shuffle(temp)
+    random.shuffle(total_list)
     
-    smaller_list = temp[:number_of_images]
+    smaller_list = total_list[:number_of_images]
     # devide training test
     n = number_of_images/6
     number_of_train, number_of_val, number_of_test= int(4*n), int(1*n), int(1*n)
@@ -62,9 +60,12 @@ def check_dir(dir:str):
     if not os.path.isdir(dir):
         os.makedirs(dir) 
  
-def make_data_sets(painters:list, number_of_images:int=600):
+def make_data_sets(painters:list, number_of_images:int=600, shape:tuple=(180, 180)):
+    # setup
+    shutil.rmtree(f"{NEW_DATA_PATH}/train/", ignore_errors = True)
+    shutil.rmtree(f"{NEW_DATA_PATH}/val/", ignore_errors = True)
+    shutil.rmtree(f"{NEW_DATA_PATH}/test/", ignore_errors = True)
     
-    shutil.rmtree(NEW_DATA_PATH)
     check_dir(f"{NEW_DATA_PATH}")
     train_list = []
     val_list = []
@@ -83,37 +84,23 @@ def make_data_sets(painters:list, number_of_images:int=600):
         check_dir(f"{NEW_DATA_PATH}/test/{painter}")
         
         for file_name in train_list:
-            image_to_lower_res(file_name, painter, new_dir="train")
+            image_to_lower_res(file_name, painter, new_dir="train", shape=shape)
         for file_name in val_list:
-            image_to_lower_res(file_name, painter, new_dir="val")
+            image_to_lower_res(file_name, painter, new_dir="val", shape=shape)
         for file_name in test_list:
-            image_to_lower_res(file_name, painter, new_dir="test")
-            
-            
-        
-   
-
-def images_to_lower_res(painter:str, shape:tuple=(180, 180)) -> bool:
-    file_names = get_raw_file_name_for_painter(painter)
-    orig_path = f"{ORIG_DATA_PATH}/{painter}/"
-    
-    [image_to_lower_res(file_name, painter, shape) for file_name in file_names]
-    return True
-    
+            image_to_lower_res(file_name, painter, new_dir="test", shape=shape)
 
 def image_to_lower_res(file_name:str, painter:str, new_dir:str, shape:tuple=(180, 180)):
     orig_path = f"{ORIG_DATA_PATH}/{painter}/"
     new_path = f"{NEW_DATA_PATH}/{new_dir}/{painter}/"
     img = Image.open(os.path.join(orig_path, file_name))
-    cover = img.resize((180, 180))
-    cover.save(os.path.join(new_path, file_name))    
     
-# def image_to_lower_res(file_name:str, painter:str, shape:tuple=(180, 180)):
-#     orig_path = f"{ORIG_DATA_PATH}/{painter}/"
-#     new_path = f"{NEW_DATA_PATH}/{painter}/"
-#     img = Image.open(os.path.join(orig_path, file_name))
-#     cover = img.resize((180, 180))
-#     cover.save(os.path.join(new_path, file_name))
+    resizedImage = img.resize((shape), Image.ANTIALIAS)
+    if resizedImage.mode != 'RGB':
+        resizedImage = resizedImage.convert('RGB')
+    
+    file_name, _ = os.path.splitext(file_name)
+    resizedImage.save(os.path.join(new_path, f"{file_name}.png"))
 
 def get_features(path):
     pass

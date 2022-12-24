@@ -1,4 +1,4 @@
-name: deep-learning
+name: painters
 channels:
   - conda-forge
   - defaults
@@ -15,6 +15,11 @@ dependencies:
   - hvplot
   - pydot
   - tensorboard
+  - pytorch
+  - torchvision
+  - statsmodels
+  - pmdarima
+  - prophet
   - pip
   - pip:
     - mlflow

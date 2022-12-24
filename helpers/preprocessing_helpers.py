@@ -12,13 +12,15 @@ if not sys.warnoptions:
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 
 # Global vars
-ORIG_DATA_PATH = "data/raw"
-NEW_DATA_PATH = "data/preprocessed"
+DATA_PATH_FILE = "data/preprocessed/data_path.csv"
+DATA_PATH_PICKLE = "data/preprocessed/data_path.pkl"
+RAW_FOLDER = "data/raw"
+PREPROCESSING_FOLDER = "data/preprocessed"
 VALID_IMAGES = [".jpg",".png",".jpeg"]
 
 def get_raw_file_name_for_painter(painter:str) ->list: 
     to_return = []
-    path = f"{ORIG_DATA_PATH}/{painter}"
+    path = f"{RAW_FOLDER}/{painter}"
     if not os.path.exists(path):
         raise FileNotFoundError(f"folder {path} does not exist")
     
@@ -62,26 +64,26 @@ def check_dir(dir:str):
  
 def make_data_sets(painters:list, number_of_images:int=600, shape:tuple=(180, 180)):
     # setup
-    shutil.rmtree(f"{NEW_DATA_PATH}/train/", ignore_errors = True)
-    shutil.rmtree(f"{NEW_DATA_PATH}/val/", ignore_errors = True)
-    shutil.rmtree(f"{NEW_DATA_PATH}/test/", ignore_errors = True)
+    shutil.rmtree(f"{PREPROCESSING_FOLDER}/train/", ignore_errors = True)
+    shutil.rmtree(f"{PREPROCESSING_FOLDER}/val/", ignore_errors = True)
+    shutil.rmtree(f"{PREPROCESSING_FOLDER}/test/", ignore_errors = True)
     
-    check_dir(f"{NEW_DATA_PATH}")
+    check_dir(f"{PREPROCESSING_FOLDER}")
     train_list = []
     val_list = []
     test_list = []
     
-    check_dir(f"{NEW_DATA_PATH}/train/")
-    check_dir(f"{NEW_DATA_PATH}/val/")
-    check_dir(f"{NEW_DATA_PATH}/test/")
+    check_dir(f"{PREPROCESSING_FOLDER}/train/")
+    check_dir(f"{PREPROCESSING_FOLDER}/val/")
+    check_dir(f"{PREPROCESSING_FOLDER}/test/")
     
     # get images   
     for painter in painters:
         train_list, val_list, test_list = get_data_set_for_painter(painter, number_of_images)
         
-        check_dir(f"{NEW_DATA_PATH}/train/{painter}")
-        check_dir(f"{NEW_DATA_PATH}/val/{painter}")
-        check_dir(f"{NEW_DATA_PATH}/test/{painter}")
+        check_dir(f"{PREPROCESSING_FOLDER}/train/{painter}")
+        check_dir(f"{PREPROCESSING_FOLDER}/val/{painter}")
+        check_dir(f"{PREPROCESSING_FOLDER}/test/{painter}")
         
         for file_name in train_list:
             image_to_lower_res(file_name, painter, new_dir="train", shape=shape)
@@ -91,8 +93,8 @@ def make_data_sets(painters:list, number_of_images:int=600, shape:tuple=(180, 18
             image_to_lower_res(file_name, painter, new_dir="test", shape=shape)
 
 def image_to_lower_res(file_name:str, painter:str, new_dir:str, shape:tuple=(180, 180)):
-    orig_path = f"{ORIG_DATA_PATH}/{painter}/"
-    new_path = f"{NEW_DATA_PATH}/{new_dir}/{painter}/"
+    orig_path = f"{RAW_FOLDER}/{painter}/"
+    new_path = f"{PREPROCESSING_FOLDER}/{new_dir}/{painter}/"
     img = Image.open(os.path.join(orig_path, file_name))
     
     resizedImage = img.resize((shape), Image.ANTIALIAS)
@@ -101,6 +103,3 @@ def image_to_lower_res(file_name:str, painter:str, new_dir:str, shape:tuple=(180
     
     file_name, _ = os.path.splitext(file_name)
     resizedImage.save(os.path.join(new_path, f"{file_name}.png"))
-
-def get_features(path):
-    pass

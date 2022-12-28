@@ -42,8 +42,9 @@ def get_data_set_for_painter(painter:str, number_of_images:int)-> tuple:
     [total_list.append(f"{file_name}") for file_name in get_raw_file_name_for_painter(painter)]
     
     if number_of_images > len(total_list):
-        raise Exception(f"To little images of {painter} to short")
-    
+        #raise Exception(f"To little images of {painter} to short")
+        number_of_images = len(total_list)
+        print(f"less images of painter {painter}")
     # shuffle list
     random.shuffle(total_list)
     

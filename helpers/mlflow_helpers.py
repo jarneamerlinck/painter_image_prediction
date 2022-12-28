@@ -60,6 +60,7 @@ class Mlflow_controller(ABC):
     ENCODER_PICKLE = "data/backup/encoder.pkl"
     OUTPUT_FOLDER = "data/output"
     BACKUP_FOLDER = "data/backup"
+    PREPROCESSING_FOLDER = "data/preprocessed"
     DOTENV_FILE = ".env"
     
     def __init__(self, experiment_name:str, model_name:str, version:str):
@@ -68,6 +69,7 @@ class Mlflow_controller(ABC):
         self._model_version = version
         self._model_filename = f"models/{self._model_name}_{self._model_version}.keras"
         self._mlflow_setup()
+        self.uses_datasets=False
 
     def _mlflow_setup(self) -> None:
         """Set all settings for mlflow correct
@@ -179,15 +181,31 @@ class Mlflow_controller(ABC):
         self._mlflow_run()
 
     def train(self):
-        history=self.model.fit(
-            self.x_train, self.y_train, 
-            batch_size=self.batch_size, epochs=self.epochs, 
-            validation_data=(self.x_val, self.y_val), 
-            callbacks=self.callback
-            )
+        if self.uses_datasets:
+            # print(self.train_dataset, type(self.train_dataset))
+            # print(self.val_dataset, type(self.val_dataset))
+            # print(self.batch_size, type(self.batch_size))
+            # print(self.epochs, type(self.epochs))
+            # print(self.callback, type(self.callback))
+            history=self.model.fit(
+                self.train_dataset, 
+                batch_size=self.batch_size, epochs=self.epochs, 
+                validation_data=(self.val_dataset), 
+                callbacks=self.callback
+                )
+        else:
+            history=self.model.fit(
+                self.x_train, self.y_train, 
+                batch_size=self.batch_size, epochs=self.epochs, 
+                validation_data=(self.x_val, self.y_val), 
+                callbacks=self.callback
+                )
         
         self.log_history(history)
-        # report = self.classification_report(self.x_test, self.y_test)
+        if self.uses_datasets:
+            self.classification_report()
+        else:
+            report = self.classification_report(self.x_test, self.y_test)
         
     def model_summary(self):
         self.model.summary()

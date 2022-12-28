@@ -44,83 +44,58 @@ if args.mlflow_run:
 class Controller(Mlflow_controller):
     def _build_model(self, input_shape, output_shape: int):
         
-        inputs = keras.Input(shape=(input_shape))        
-        x = layers.Conv1D(256, 8, padding='same', activation="ReLU")(inputs)
-        x = layers.BatchNormalization()(x)
-        x = layers.Dropout(0.25)(x)
-        x = layers.MaxPool1D(pool_size=8)(x)
-        
-        x = layers.Conv1D(128, 8, padding='same', activation="ReLU")(x)
-        x = layers.Conv1D(128, 8, padding='same', activation="ReLU")(x)
-        x = layers.Conv1D(128, 8, padding='same', activation="ReLU")(x)
-        x = layers.Conv1D(128, 8, padding='same', activation="ReLU")(x)
-        x = layers.BatchNormalization()(x)
-        x = layers.Dropout(0.25)(x)
-        x = layers.MaxPool1D(pool_size=8)(x)
-        x = layers.Conv1D(64, 8, padding='same', activation="ReLU")(x)
-        
-        x = layers.Conv1D(64, 8, padding='same', activation="ReLU")(x)
+        inputs = keras.Input(shape=input_shape)
+        x = layers.Conv2D(filters=32, kernel_size=3, activation="relu")(inputs)
+        x = layers.MaxPooling2D(pool_size=2)(x)
+
+        x = layers.Conv2D(filters=32, kernel_size=3, activation="relu")(x)
+        x = layers.MaxPooling2D(pool_size=2)(x)
+        x = layers.Dropout(0.5)(x)
+
         x = layers.Flatten()(x)
-        
+        x = layers.Dense(256, activation="relu")(x)
         outputs = layers.Dense(output_shape, activation="softmax")(x)
         model = keras.Model(inputs=inputs, outputs=outputs)
-        model.compile(optimizer = 'adam' , loss = 'categorical_crossentropy' , metrics = ['accuracy'])
+        model.compile(loss="categorical_crossentropy",optimizer="rmsprop",metrics=["accuracy"])
         
         return model
 
     def load_features(self):
-        data_path = pd.read_pickle(DATA_PATH_PICKLE)
-        path = np.array(data_path.Path)[1]
-    
-        data, sample_rate = librosa.load(path)
-
-        X, Y = [], []
-        for path, emotion in zip(data_path.Path, data_path.Emotions):
-            feature = get_features(path)
-            for ele in feature:
-                X.append(ele)
-                Y.append(emotion)
-                
-        features = pd.DataFrame(X)
-        features['labels'] = Y
-        features.to_csv(f"{self.BACKUP_FOLDER}/features.csv", index=False)
-        mlflow.log_artifact(f"{self.BACKUP_FOLDER}/features.csv", artifact_path=self.BACKUP_FOLDER)
-        
-        X = features.iloc[: ,:-1].values
-        Y = features['labels'].values
-
-        encoder = OneHotEncoder()
-        Y = encoder.fit_transform(np.array(Y).reshape(-1,1)).toarray()
-        
-        x_train, x_test, y_train, y_test = train_test_split(X, Y, random_state=0, shuffle=True, test_size=1/6)
-        x_train, y_train, x_val, y_val = train_test_split(x_train, y_train, random_state=0, shuffle=True, test_size=1/5)
-        
-        scaler = StandardScaler()
-        x_train = scaler.fit_transform(x_train)
-        x_test = scaler.transform(x_test)
-
-        x_train = np.expand_dims(x_train, axis=2)
-        x_test = np.expand_dims(x_test, axis=2)
-        
-        self.x_train = x_train
-        self.x_test = x_test
-        self.y_train = y_train
-        self.y_test = y_test
-        
-        self.set_encoder(encoder)
+        self.batch_size = 64
+        self.image_shape = (180, 180)
+        self.train_dataset = tf.keras.preprocessing.image_dataset_from_directory(
+            f"{PREPROCESSING_FOLDER}/train", image_size=self.image_shape, batch_size=self.batch_size, label_mode='categorical'
+        )
+        self.test_dataset = tf.keras.preprocessing.image_dataset_from_directory(
+            f"{PREPROCESSING_FOLDER}/test", image_size=self.image_shape, batch_size=self.batch_size, label_mode='categorical' 
+        )
+        self.val_dataset = tf.keras.preprocessing.image_dataset_from_directory(
+            f"{PREPROCESSING_FOLDER}/val", image_size=self.image_shape, batch_size=self.batch_size, label_mode='categorical' 
+        )
+               
     
     def _set_train_options(self):
-        self.batch_size = 64
-        self.epochs = 100
-        self.callback = rlrp = ReduceLROnPlateau(monitor='loss', factor=0.4, verbose=0, patience=2, min_lr=0.0000001)
-        self.input_shape = (self.x_train.shape[1],1)
-        self.labels = self.y_train.shape[1]
+        self.uses_datasets = True
+        # self.batch_size = 64
+        self.epochs = 50
+        filename = "painter_baseline.keras"
+        self.callback = [keras.callbacks.ModelCheckpoint(filename, save_best_only=True), MlflowCallback("accuracy")]
+        self.input_shape = (180, 180, 3)
+        self.labels = len(self.train_dataset.class_names)
+        
+    def mlflow_log(self):
+        t_loss, t_accuracy = self.model.evaluate(self.test_dataset)
+        mlflow.log_metrics({"test_loss": t_loss,"test_accuracy": t_accuracy})
+        mlflow.log_artifact("train.py", artifact_path=self.BACKUP_FOLDER)
+    def classification_report(self):
+        self.plot_loss()
+        self.save_to_mlflow()
 
 
 # Main function for training model on split train data and evaluating on validation data
 def main():
-    experiment = "experimental"
-    model_name = "NN_sequential"
+    experiment = "baseline"
+    model_name = "Baseline_model"
     model_version = "001"
     mlflow_controller = Controller(experiment, model_name, model_version)
     

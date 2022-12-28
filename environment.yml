@@ -8,10 +8,13 @@ dependencies:
   - ipykernel
   - numpy
   - pandas
-  - tensorflow
+  - tensorflow-gpu
   - scikit-learn
   - matplotlib
   - seaborn
+  - boto3
+  - minio
+  - python-dotenv
   - hvplot
   - pydot
   - tensorboard
@@ -22,4 +25,6 @@ dependencies:
   - prophet
   - pip
   - pip:
-    - mlflow
+    - mlflow>=1.30.0
+    - pylance
+    - tensorflow-serving-api

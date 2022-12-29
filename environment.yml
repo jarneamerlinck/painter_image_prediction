@@ -9,6 +9,7 @@ dependencies:
   - numpy
   - pandas
   - tensorflow-gpu
+  - keras-gpu
   - scikit-learn
   - matplotlib
   - seaborn
@@ -18,11 +19,6 @@ dependencies:
   - hvplot
   - pydot
   - tensorboard
-  - pytorch
-  - torchvision
-  - statsmodels
-  - pmdarima
-  - prophet
   - pip
   - pip:
     - mlflow>=1.30.0

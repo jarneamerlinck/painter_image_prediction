@@ -22,6 +22,7 @@ import matplotlib.pyplot as plt
 from keras.utils.vis_utils import plot_model
 from sklearn.metrics import confusion_matrix, classification_report
 
+
 class MlflowCallback(keras.callbacks.Callback):
     def __init__(self, metric:str):
         self.metric = metric
@@ -226,11 +227,11 @@ class Mlflow_controller(ABC):
             mlflow.set_tag("version.tensorflow", tf.__version__)
             
             self.load_features()
-            
             self._set_train_options()
             self.model = self._build_model(self.input_shape, self.labels)
             self.train()
             self.mlflow_log()
+
     
     def mlflow_log(self):
         pass

@@ -14,6 +14,6 @@ def main():
 
     # Save results to data/preprocessed
     painters = ["Picasso", "Rubens","Mondriaan"]
-    make_data_sets(painters, 600) 
+    make_data_sets(painters, 600, shape=(180, 180)) 
 if __name__ == '__main__':
     main()

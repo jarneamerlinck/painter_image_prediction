@@ -1,7 +1,7 @@
 # painter_image_prediction
 ## Documentation
 
-The summary of what models is used is in [docs](docs/README.md)
+The summary of what models/improvements are used are in [docs](docs/README.md)
 ## Setup 
 
 1. Copy data folders to data/raw

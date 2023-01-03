@@ -6,6 +6,9 @@
 
 ## [Baseline](baseline.md)
 ## [Image input size](input_size.md)
-- We use 180 x 180 as image size
+- 180 x 180 as image size
 ## [Data augmentation](data_augmentation.md)
+- Flip, rotation_and_zoom (horizontal, 0.1, 0.2) in the final model
 ## [Conv bases](conv_bases.md)
+- ResNet152 4 trainable layers is the best conv base
+

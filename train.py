@@ -16,7 +16,7 @@ from tensorflow.python.keras.utils import np_utils
 from tensorflow.python.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.utils import to_categorical
-from keras import layers
+from tensorflow.keras import layers
 
 import re
 
@@ -42,16 +42,26 @@ if args.mlflow_run:
     from mlflow import log_metric, log_param, log_artifacts
 
 class Controller(Mlflow_controller):
-    image_line = 180
     def _build_model(self, input_shape, output_shape: int):
+             
+        conv_base = keras.applications.resnet.ResNet50(
+                    weights="imagenet",
+                    include_top=False
+                    )
         
-        inputs = keras.Input(shape=input_shape)
-        x = layers.Conv2D(filters=32, kernel_size=3, activation="relu")(inputs)
-        x = layers.MaxPooling2D(pool_size=2)(x)
-        x = layers.Dropout(0.5)(x)
+        conv_base.trainable = True
+        for layer in conv_base.layers[:-2]:
+            layer.trainable = False
 
+    
+        inputs = keras.Input(shape=input_shape)
+        x = inputs
+        x = keras.applications.resnet.preprocess_input(x)
+        x = conv_base(x)
+        
         x = layers.Flatten()(x)
         x = layers.Dense(256, activation="relu")(x)
+        x = layers.Dropout(0.5)(x)
         outputs = layers.Dense(output_shape, activation="softmax")(x)
         model = keras.Model(inputs=inputs, outputs=outputs)
         model.compile(loss="categorical_crossentropy",optimizer="rmsprop",metrics=["accuracy"])
@@ -60,7 +70,7 @@ class Controller(Mlflow_controller):
 
     def load_features(self):
         self.batch_size = 64
-        self.image_shape = (self.image_line, self.image_line)
+        self.image_shape = (180, 180)
         self.train_dataset = tf.keras.preprocessing.image_dataset_from_directory(
             f"{PREPROCESSING_FOLDER}/train", image_size=self.image_shape, batch_size=self.batch_size, label_mode='categorical'
         )
@@ -74,10 +84,11 @@ class Controller(Mlflow_controller):
     
     def _set_train_options(self):
         self.uses_datasets = True
-        self.epochs = 15
+        # self.batch_size = 64
+        self.epochs = 50
         filename = "painter_baseline.keras"
         self.callback = [keras.callbacks.ModelCheckpoint(filename, save_best_only=True), MlflowCallback("accuracy")]
-        self.input_shape = (self.image_line, self.image_line, 3)
+        self.input_shape = (180, 180, 3)
         self.labels = len(self.train_dataset.class_names)
         
     def mlflow_log(self):
@@ -91,9 +102,9 @@ class Controller(Mlflow_controller):
 
 # Main function for training model on split train data and evaluating on validation data
 def main():
-    experiment = "input_size"
-    model_name = "input_size_smaller_model"
-    model_version = "001"
+    experiment = "conv_bases"
+    model_name = "ResNet50_model"
+    model_version = "002"
     mlflow_controller = Controller(experiment, model_name, model_version)
     
     mlflow_controller()

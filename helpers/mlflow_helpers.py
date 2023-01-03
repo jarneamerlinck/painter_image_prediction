@@ -4,7 +4,7 @@ import os
 import sys
 import re
 import pickle
-from  dotenv import load_dotenv
+from dotenv import load_dotenv
 
 import mlflow
 from mlflow import log_metric, log_param, log_artifacts

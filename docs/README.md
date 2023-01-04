@@ -10,5 +10,6 @@
 ## [Data augmentation](data_augmentation.md)
 - Flip, rotation_and_zoom (horizontal, 0.1, 0.2) in the final model
 ## [Conv bases](conv_bases.md)
-- ResNet152 4 trainable layers is the best conv base
+- VGG19 2 trainable layers is the best conv base
 
+## [More complexity](complexity.md)

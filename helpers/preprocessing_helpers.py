@@ -94,6 +94,7 @@ def make_data_sets(painters:list, number_of_images:int=600, shape:tuple=(180, 18
             image_to_lower_res(file_name, painter, new_dir="test", shape=shape)
 
 def image_to_lower_res(file_name:str, painter:str, new_dir:str, shape:tuple=(180, 180)):
+   
     orig_path = f"{RAW_FOLDER}/{painter}/"
     new_path = f"{PREPROCESSING_FOLDER}/{new_dir}/{painter}/"
     img = Image.open(os.path.join(orig_path, file_name))
@@ -104,3 +105,16 @@ def image_to_lower_res(file_name:str, painter:str, new_dir:str, shape:tuple=(180
     
     file_name, _ = os.path.splitext(file_name)
     resizedImage.save(os.path.join(new_path, f"{file_name}.png"))
+
+def image_prepairing_website(file_name:str, shape:tuple=(180, 180)):
+    orig_path = f"static/uploads/"
+    new_path = f"static/preprocessed/"
+    img = Image.open(os.path.join(orig_path, file_name))
+
+    resizedImage = img.resize((shape), Image.ANTIALIAS)
+    if resizedImage.mode != 'RGB':
+        resizedImage = resizedImage.convert('RGB')
+
+    file_name, _ = os.path.splitext(file_name)
+    resizedImage.save(os.path.join(new_path, f"{file_name}.png"))
+

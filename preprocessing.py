@@ -13,7 +13,7 @@ def main():
     # Inspect our result
 
     # Save results to data/preprocessed
-    painters = ["Picasso", "Rubens","Mondriaan"]
+    painters = ["Picasso", "Rubens","Mondriaan", "Rembrandt"]
     make_data_sets(painters, 600, shape=(180, 180)) 
 if __name__ == '__main__':
     main()

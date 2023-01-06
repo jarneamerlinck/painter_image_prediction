@@ -1,5 +1,9 @@
 <!doctype html>
 <title>Painter image prediction</title>
+<h2>Know painters</h2>
+{% for painter in painters %}
+		  <li>{{ painter }}</li>
+		{% endfor %}
 <h2>Select a file to upload</h2>
 <p>
 	{% with messages = get_flashed_messages() %}

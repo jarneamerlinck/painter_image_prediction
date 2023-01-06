@@ -12,60 +12,38 @@ from tensorflow.python.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras import layers
-
+import mlflow
 
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 app=Flask(__name__)
 
 UPLOAD_FOLDER = 'static/uploads/'
+MODEL_LINK = "s3://mlflow/6/2a5ec012885541e8b017573e965aff99/artifacts/model"
 
 app = Flask(__name__)
 app.secret_key = "secret key"
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 2048 * 2048
 
+img_width, img_height = 180, 180
+test_dataset = tf.keras.preprocessing.image_dataset_from_directory(
+                f"{PREPROCESSING_FOLDER}/test", image_size=(img_width, img_height), batch_size=64, label_mode='categorical'
+                )
+    
+CLASS_NAMES = test_dataset.class_names
 
 def allowed_file(filename):
 	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 def load_model():
-    input_shape = (180, 180, 3)
-    output_shape = 3
 
-    data_augmentation = keras.Sequential([
-                layers.RandomFlip("horizontal"),
-                layers.RandomRotation(0.1),
-                layers.RandomZoom(0.2),
-                ])
-            
-    conv_base = keras.applications.vgg19.VGG19(
-                weights="imagenet",
-                include_top=False
-                )
-
-    conv_base.trainable = True
-    for layer in conv_base.layers[:-2]:
-        layer.trainable = False
-
-
-    inputs = keras.Input(shape=input_shape)
-    x = inputs
-    x = data_augmentation(x) 
-
-    x = keras.applications.vgg19.preprocess_input(x)
-    x = conv_base(x)
-
-    x = layers.Flatten()(x)
-    x = layers.Dense(256, activation="relu")(x)
-    x = layers.Dropout(0.5)(x)
-    outputs = layers.Dense(output_shape, activation="softmax")(x)
-    model = keras.Model(inputs=inputs, outputs=outputs)
-    model.compile(loss="categorical_crossentropy",optimizer="rmsprop",metrics=["accuracy"])
-    model.load_weights("painter_baseline.keras")
+    model = mlflow.tensorflow.load_model(MODEL_LINK)
     return model
 
+
+
 def predict(filename):
-    img_width, img_height = 180, 180
+    
 
     model = load_model()
     filename = f'static/preprocessed/{filename}'
@@ -79,19 +57,14 @@ def predict(filename):
     img_array = tf.expand_dims(img_array, 0)
     predictions = model.predict(img_array)
     score = tf.nn.softmax(predictions[0])
-    test_dataset = tf.keras.preprocessing.image_dataset_from_directory(
-                f"{PREPROCESSING_FOLDER}/test", image_size=(img_width, img_height), batch_size=64, label_mode='categorical'
-                )
     
-    class_names = test_dataset.class_names
 
-    return "This image most likely belongs to {} with a {:.2f} percent confidence.".format(class_names[np.argmax(score)], 100 * np.max(score))
-    
-    
-	
+    return "This image most likely belongs to {} with a {:.2f} percent confidence.".format(CLASS_NAMES[np.argmax(score)], 100 * np.max(score))
+    	
 @app.route('/')
 def upload_form():
-	return render_template('upload.html')
+
+	return render_template('upload.html', painters=CLASS_NAMES)
 
 @app.route('/', methods=['POST'])
 def upload_image():
@@ -109,7 +82,7 @@ def upload_image():
         image_prepairing_website(filename)
         result  = predict(filename)
         flash(result)
-        return render_template('upload.html', filename=filename)
+        return render_template('upload.html', filename=filename, painters=CLASS_NAMES)
     else:
         flash('Allowed image types are -> png, jpg, jpeg')
         return redirect(request.url)
@@ -120,4 +93,4 @@ def display_image(filename):
 	return redirect(url_for('static', filename='uploads/' + filename), code=301)
 
 if __name__ == "__main__":
-    app.run(port=8080)
+    app.run(host="192.168.1.35",port=8080)

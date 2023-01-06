@@ -1,5 +1,6 @@
 # Load packages
 ## Data wrangling
+from matplotlib.pyplot import axis
 import pandas as pd
 import numpy as np
 
@@ -43,8 +44,15 @@ if args.mlflow_run:
 
 class Controller(Mlflow_controller):
     def _build_model(self, input_shape, output_shape: int):
-             
-        conv_base = keras.applications.resnet.ResNet50(
+    
+    
+        data_augmentation = keras.Sequential([
+            layers.RandomFlip("horizontal"),
+            layers.RandomRotation(0.1),
+            layers.RandomZoom(0.2),
+            ])
+        
+        conv_base = keras.applications.vgg19.VGG19(
                     weights="imagenet",
                     include_top=False
                     )
@@ -56,7 +64,9 @@ class Controller(Mlflow_controller):
     
         inputs = keras.Input(shape=input_shape)
         x = inputs
-        x = keras.applications.resnet.preprocess_input(x)
+        x = data_augmentation(x) 
+        
+        x = keras.applications.vgg19.preprocess_input(x)
         x = conv_base(x)
         
         x = layers.Flatten()(x)
@@ -85,7 +95,7 @@ class Controller(Mlflow_controller):
     def _set_train_options(self):
         self.uses_datasets = True
         # self.batch_size = 64
-        self.epochs = 50
+        self.epochs = 30
         filename = "painter_baseline.keras"
         self.callback = [keras.callbacks.ModelCheckpoint(filename, save_best_only=True), MlflowCallback("accuracy")]
         self.input_shape = (180, 180, 3)
@@ -102,9 +112,9 @@ class Controller(Mlflow_controller):
 
 # Main function for training model on split train data and evaluating on validation data
 def main():
-    experiment = "conv_bases"
-    model_name = "ResNet50_model"
-    model_version = "002"
+    experiment = "final_model"
+    model_name = "all_4_painters_model"
+    model_version = "004"
     mlflow_controller = Controller(experiment, model_name, model_version)
     
     mlflow_controller()

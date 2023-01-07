@@ -1,7 +1,7 @@
 import os
-from pickle import NONE
 from flask import Flask, flash, request, redirect, url_for, render_template
 from flask_ngrok2 import run_with_ngrok
+import pickle
 
 from werkzeug.utils import secure_filename
 from helpers.preprocessing_helpers import *
@@ -41,8 +41,19 @@ def allowed_file(filename):
 	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 def load_model():
     global MODEL
+    filename = 'model_pickle.pkl'
     if MODEL== None:
-        MODEL = mlflow.tensorflow.load_model(MODEL_LINK)
+        if os.path.exists(filename):
+            file = open(filename, 'rb')
+            MODEL = pickle.load(file)
+            file.close()
+        else:
+            print("started_downloading")
+            MODEL = mlflow.tensorflow.load_model(MODEL_LINK)
+            file = open(filename, 'wb')
+            # dump information to the file
+            pickle.dump(MODEL, file)
+            file.close()
     return MODEL
 
 

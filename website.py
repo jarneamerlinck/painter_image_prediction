@@ -111,5 +111,5 @@ def display_image(filename):
 if __name__ == "__main__":
     load_dotenv()
     auth_token = os.getenv('NGROK_ACCESS_TOKEN')
-    run_with_ngrok(app=app, auth_token=auth_token)
+    #run_with_ngrok(app=app, auth_token=auth_token)
     app.run()

@@ -365,4 +365,5 @@ dependencies:
       - websocket-client==1.4.1
       - xxhash==3.1.0
       - boto3
+      - flask-ngrok2
 prefix: /home/eragon/.conda/envs/painters

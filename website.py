@@ -1,6 +1,8 @@
 import os
-import urllib.request
+from pickle import NONE
 from flask import Flask, flash, request, redirect, url_for, render_template
+from flask_ngrok2 import run_with_ngrok
+
 from werkzeug.utils import secure_filename
 from helpers.preprocessing_helpers import *
 import tensorflow as tf
@@ -13,14 +15,16 @@ from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras import layers
 import mlflow
-
+from dotenv import load_dotenv
 
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg'])
 app=Flask(__name__)
 
+app = Flask(__name__)
+
 UPLOAD_FOLDER = 'static/uploads/'
 MODEL_LINK = "s3://mlflow/6/2a5ec012885541e8b017573e965aff99/artifacts/model"
-
+MODEL=None
 app = Flask(__name__)
 app.secret_key = "secret key"
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -36,9 +40,10 @@ CLASS_NAMES = test_dataset.class_names
 def allowed_file(filename):
 	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 def load_model():
-
-    model = mlflow.tensorflow.load_model(MODEL_LINK)
-    return model
+    global MODEL
+    if MODEL== None:
+        MODEL = mlflow.tensorflow.load_model(MODEL_LINK)
+    return MODEL
 
 
 
@@ -93,4 +98,7 @@ def display_image(filename):
 	return redirect(url_for('static', filename='uploads/' + filename), code=301)
 
 if __name__ == "__main__":
-    app.run(host="192.168.1.35",port=8080)
+    load_dotenv()
+    auth_token = os.getenv('NGROK_ACCESS_TOKEN')
+    run_with_ngrok(app=app, auth_token=auth_token)
+    app.run()

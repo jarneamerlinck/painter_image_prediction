@@ -94,7 +94,6 @@ class Controller(Mlflow_controller):
     
     def _set_train_options(self):
         self.uses_datasets = True
-        # self.batch_size = 64
         self.epochs = 30
         filename = "painter_baseline.keras"
         self.callback = [keras.callbacks.ModelCheckpoint(filename, save_best_only=True), MlflowCallback("accuracy")]

@@ -13,3 +13,9 @@
 - VGG19 2 trainable layers is the best conv base
 
 ## [More complexity](complexity.md)
+
+## [Final model](final_model.md)
+
+## Video website
+![video website](local_run_website.mp4)
+

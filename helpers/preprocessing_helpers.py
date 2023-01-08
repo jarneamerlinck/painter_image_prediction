@@ -18,7 +18,18 @@ RAW_FOLDER = "data/raw"
 PREPROCESSING_FOLDER = "data/preprocessed"
 VALID_IMAGES = [".jpg",".png",".jpeg"]
 
-def get_raw_file_name_for_painter(painter:str) ->list: 
+def get_raw_file_name_for_painter(painter:str) ->list:
+    """Gets list of all images of a painter in data/raw
+
+    Args:
+        painter (str): Name of the painter
+
+    Raises:
+        FileNotFoundError: Raises error if the folder of the painter doesn't exist
+
+    Returns:
+        list: list of all images from the painter
+    """
     to_return = []
     path = f"{RAW_FOLDER}/{painter}"
     if not os.path.exists(path):
@@ -33,6 +44,16 @@ def get_raw_file_name_for_painter(painter:str) ->list:
     return to_return
 
 def get_data_set_for_painter(painter:str, number_of_images:int)-> tuple:
+    """Makes an 3 lists of n random images of a painter
+    makes an train, val and test list
+
+    Args:
+        painter (str): Name of the painter
+        number_of_images (int): Number of images over the 3 datasets
+
+    Returns:
+        tuple: train, val and test list of images
+    """
     # get images
     total_list = []
     train_list = []
@@ -60,11 +81,23 @@ def get_data_set_for_painter(painter:str, number_of_images:int)-> tuple:
     return train_list, val_list, test_list
 
 def check_dir(dir:str):
+    """Makes sure dir exists
+
+    Args:
+        dir (str): path to dir
+    """
     if not os.path.isdir(dir):
         os.makedirs(dir) 
  
 def make_data_sets(painters:list, number_of_images:int=600, shape:tuple=(180, 180)):
-    # setup
+    """Creates the preprocessing dataset for the painters list
+
+    Args:
+        painters (list): List of all the painters that need to be processed
+        number_of_images (int, optional): Number of images for each painter. Defaults to 600.
+        shape (tuple, optional): Shape of the processed images. Defaults to (180, 180).
+    """
+
     shutil.rmtree(f"{PREPROCESSING_FOLDER}/train/", ignore_errors = True)
     shutil.rmtree(f"{PREPROCESSING_FOLDER}/val/", ignore_errors = True)
     shutil.rmtree(f"{PREPROCESSING_FOLDER}/test/", ignore_errors = True)
@@ -94,7 +127,14 @@ def make_data_sets(painters:list, number_of_images:int=600, shape:tuple=(180, 18
             image_to_lower_res(file_name, painter, new_dir="test", shape=shape)
 
 def image_to_lower_res(file_name:str, painter:str, new_dir:str, shape:tuple=(180, 180)):
-   
+    """Processed images for fitting
+
+    Args:
+        file_name (str): Name of the image
+        painter (str): Name of the painter
+        new_dir (str): New dir
+        shape (tuple, optional): Shape of the processed images. Defaults to (180, 180).
+    """
     orig_path = f"{RAW_FOLDER}/{painter}/"
     new_path = f"{PREPROCESSING_FOLDER}/{new_dir}/{painter}/"
     img = Image.open(os.path.join(orig_path, file_name))
@@ -107,6 +147,12 @@ def image_to_lower_res(file_name:str, painter:str, new_dir:str, shape:tuple=(180
     resizedImage.save(os.path.join(new_path, f"{file_name}.png"))
 
 def image_prepairing_website(file_name:str, shape:tuple=(180, 180)):
+    """Processed images for the website
+
+    Args:
+        file_name (str): name of the image
+        shape (tuple, optional): Shape of the image input for the model. Defaults to (180, 180).
+    """
     orig_path = f"static/uploads/"
     new_path = f"static/preprocessed/"
     img = Image.open(os.path.join(orig_path, file_name))

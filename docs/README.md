@@ -18,5 +18,6 @@
 
 ## Video website
 
-https://raw.githubusercontent.com/jarneamerlinck/painter_image_prediction/main/docs/local_run_website.mp4
 
+
+[![Video ]()](https://raw.githubusercontent.com/jarneamerlinck/painter_image_prediction/main/docs/local_run_website.mp4)

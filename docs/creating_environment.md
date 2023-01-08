@@ -37,3 +37,17 @@ Mlflow was also used to compare models agains each other.
     - The website should normaly send the data to the server that runs the model
     - But that was outside of the material seen in the class
 
+
+#### mlflow_Controller
+
+- This [class](../helpers/mlflow_helpers.py) was created to manage the runs in mlflow
+- Sequence of the used classes
+1. load_features()
+2. _set_train_options()
+3. _build_model()
+4. train()
+5. mlflow_log()
+
+- The class has been documented for more explanation on the working
+- This simplified the used of mlflow and the train.py file was cleaner and easier to understand
+

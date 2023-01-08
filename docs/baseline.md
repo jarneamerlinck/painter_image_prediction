@@ -18,3 +18,4 @@ outputs = layers.Dense(output_shape, activation="softmax")(x)
 
 
 ![train_val_accuracy_baseline](attachments/baseline_train_val_accuracy.png)
+![train_val_loss_baseline](attachments/baseline_train_val_loss.png)

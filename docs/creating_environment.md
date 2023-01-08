@@ -36,6 +36,10 @@ Mlflow was also used to compare models agains each other.
     - Here the website downloaded the model and predicts it.
     - The website should normaly send the data to the server that runs the model
     - But that was outside of the material seen in the class
+- For ease of use mlflow with all the trained models has been deployed on an home server
+  - Ask the creator for access
+  - All models can be downloaded from the mlflow server
+    - An example of this can be found in [website.py](../website.py)
 
 
 #### mlflow_Controller

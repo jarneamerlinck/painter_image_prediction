@@ -17,5 +17,6 @@
 ## [Final model](final_model.md)
 
 ## Video website
-![video website](local_run_website.mp4)
+
+https://raw.githubusercontent.com/jarneamerlinck/painter_image_prediction/main/docs/local_run_website.mp4
 
